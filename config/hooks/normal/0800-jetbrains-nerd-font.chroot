@@ -1,0 +1,9 @@
+#!/bin/bash
+echo "=> [Hook] Installing JetBrains Mono Nerd Font..."
+
+FONT_DIR="/usr/share/fonts/truetype/jetbrains-mono-nerd"
+mkdir -p "$FONT_DIR"
+
+curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip" | bsdtar -xf - -C "$FONT_DIR"
+
+fc-cache -fv

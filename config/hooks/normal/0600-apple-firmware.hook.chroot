@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "=> [Hook] Downloading and enabling get-apple-firmware.service..."
+curl -s https://raw.githubusercontent.com/t2linux/wiki/refs/heads/master/docs/tools/get-apple-firmware.service -o /etc/systemd/system/get-apple-firmware.service
+systemctl enable get-apple-firmware.service

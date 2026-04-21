@@ -1,0 +1,9 @@
+initramfs-tools 
+intel-microcode
+locales 
+net-tools 
+network-manager 
+pciutils 
+thermald
+usbutils
+wireless-tools 

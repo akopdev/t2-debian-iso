@@ -1,0 +1,16 @@
+#!/bin/bash
+echo "=> [Hook] Cleaning up caches to shrink ISO size..."
+
+apt-get autoremove --purge -y
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+rm -rf /var/cache/apt/archives/*
+
+if [ -d "/home/linuxbrew/.linuxbrew/cache" ]; then
+    rm -rf /home/linuxbrew/.linuxbrew/cache/*
+fi
+
+rm -rf /home/user/.cache/*
+rm -rf /tmp/*
+rm -rf /var/tmp/*
+find /var/log -type f -exec cp /dev/null {} \;

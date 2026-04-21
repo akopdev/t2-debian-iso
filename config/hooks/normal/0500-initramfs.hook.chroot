@@ -1,0 +1,14 @@
+#!/bin/sh
+echo "=> [Hook] Forcing initramfs generation for installed kernel..."
+
+sed -i "s/COMPRESS=lz4/COMPRESS=gzip/g" "/etc/initramfs-tools/initramfs.conf"
+sed -i "s/COMPRESS=zstd/COMPRESS=gzip/g" "/etc/initramfs-tools/initramfs.conf"
+
+# Force Apple BCE module to load at boot for keyboard
+echo "apple-bce" > /etc/modules-load.d/t2.conf
+
+# Add AMD GPU power management to prevent overheating on 15/16" MBPs
+echo 'KERNEL=="card[012]", SUBSYSTEM=="drm", DRIVERS=="amdgpu", ATTR{device/power_dpm_force_performance_level}="low"' > /etc/udev/rules.d/30-amdgpu-pm.rules
+
+# Attempt to create the RAM disk, fallback to update if it already partially exists
+update-initramfs -c -k all || update-initramfs -u -k all
