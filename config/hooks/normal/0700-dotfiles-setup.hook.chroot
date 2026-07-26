@@ -1,14 +1,14 @@
 #!/bin/bash
 echo "=> [Hook] Installing dotfiles..."
 
-if ! id -u user >/dev/null 2>&1; then
-    useradd -m -s /bin/zsh -u 1000 user
+if ! id -u akop >/dev/null 2>&1; then
+    useradd -m -s /bin/zsh -u 1000 akop
 fi
 
-echo "user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
+echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
 chmod 0440 /etc/sudoers.d/temp-build-sudo
 
-su - user -c '
+su - akop -c '
     echo "=> [Hook] Execute dotfiles install script as $(whoami)"
     NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/akopdev/dotfiles/HEAD/install.sh)"
 '

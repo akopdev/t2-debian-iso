@@ -10,7 +10,7 @@ if [ -d "/home/linuxbrew/.linuxbrew/cache" ]; then
     rm -rf /home/linuxbrew/.linuxbrew/cache/*
 fi
 
-rm -rf /home/user/.cache/*
+rm -rf /home/akop/.cache/*
 rm -rf /tmp/*
 rm -rf /var/tmp/*
 find /var/log -type f -exec cp /dev/null {} \;
