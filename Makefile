@@ -18,7 +18,7 @@ init:
 
 .PHONY: build 
 build: init ## Build custom Debian ISO disk
-	@docker run -it --rm \
+	@docker run --rm \
 		--privileged \
 		--platform linux/amd64 \
 		-v $(CURDIR)/output:/output \
