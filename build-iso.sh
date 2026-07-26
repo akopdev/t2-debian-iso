@@ -13,7 +13,8 @@ lb config \
     --linux-packages "linux" \
     --linux-flavours "t2" \
     --archive-areas "main contrib non-free non-free-firmware" \
-    --debootstrap-options "--include=ca-certificates,gnupg"
+    --debootstrap-options "--include=ca-certificates,gnupg" \
+    --bootappend-live "boot=live components quiet splash username=akop"
 
 echo "=> T2 reposity configuration..."
 mkdir -p config/archives

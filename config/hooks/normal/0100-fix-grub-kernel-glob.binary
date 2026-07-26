@@ -1,0 +1,6 @@
+#!/bin/sh
+echo "=> [Hook] Fixing grub.cfg kernel/initrd glob for t2 kernel naming..."
+sed -i \
+    -e 's#/live/vmlinuz-\*[^ 	]*#/live/vmlinuz#g' \
+    -e 's#/live/initrd\.img-\*[^ 	]*#/live/initrd.img#g' \
+    boot/grub/grub.cfg
