@@ -9,6 +9,10 @@ echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
 chmod 0440 /etc/sudoers.d/temp-build-sudo
 
 su - akop -c '
+    echo "=> [Hook] Copy trusted taps/formulas from dotfiles..."
+    mkdir -p "${HOME}/.homebrew"
+    cp -r "${HOME}/.dotfiles/homebrew/." "${HOME}/.homebrew/"
+
     echo "=> [Hook] Execute dotfiles install script as $(whoami)"
     NONINTERACTIVE=1 bash "${HOME}/.dotfiles/install.sh"
 '
