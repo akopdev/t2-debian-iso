@@ -10,7 +10,7 @@ chmod 0440 /etc/sudoers.d/temp-build-sudo
 
 su - akop -c '
     echo "=> [Hook] Execute dotfiles install script as $(whoami)"
-    NONINTERACTIVE=1 bash -c "$(curl -fsSL https://raw.githubusercontent.com/akopdev/dotfiles/HEAD/install.sh)"
+    NONINTERACTIVE=1 bash "${HOME}/.dotfiles/install.sh"
 '
 
 rm /etc/sudoers.d/temp-build-sudo
