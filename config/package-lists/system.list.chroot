@@ -5,6 +5,8 @@ locales
 net-tools
 network-manager
 pciutils
+python3
 thermald
 usbutils
 wireless-tools
+dmg2img
