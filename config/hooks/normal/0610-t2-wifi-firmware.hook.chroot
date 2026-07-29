@@ -370,17 +370,12 @@ dmg2img -s BaseSystem.dmg fw.img
 
 cd - >/dev/null
 
-# Reading the image's HFS+ recovery partition needs an actual HFS+ reader.
-# The kernel one isn't reliable to depend on here (Docker build hosts often
-# lack the hfsplus module entirely), and Debian's old hfsutils-derived
-# hfsplus package (hpmount/hpcopy) can't parse the HFS+ variant modern macOS
-# recovery images use. libguestfs reads it in pure userspace instead, so it
-# works with no kernel filesystem support and no loop/partition device setup
-# at all. It's a heavy, build-only dependency, so it's installed and purged
-# within this hook rather than added to a package list.
 echo "=> [Hook] Installing libguestfs to read the recovery image..."
 apt-get update -qq
+
+_pkgs_before=$(dpkg-query -W -f='${Package}\n' | sort)
 apt-get install -y -qq libguestfs-tools libguestfs-hfsplus
+_pkgs_new=$(comm -13 <(echo "${_pkgs_before}") <(dpkg-query -W -f='${Package}\n' | sort))
 
 echo "=> [Hook] Extracting firmware from image..."
 partition=$(guestfish --ro -a "${workdir}/fw.img" run : list-filesystems | grep hfsplus | cut -d: -f1)
@@ -394,7 +389,9 @@ tar ${verbose} -xC /lib/firmware/brcm -f "${workdir}/firmware-renamed.tar"
 echo "=> [Hook] Cleaning up..."
 rm -r ${verbose} "${workdir}"
 rm -r ${verbose} "${imgdir}"
-apt-get purge -y -qq libguestfs-tools libguestfs-hfsplus
+if [ -n "${_pkgs_new}" ]; then
+	apt-get purge -y -qq --allow-remove-essential ${_pkgs_new}
+fi
 apt-get autoremove -y -qq
 
 echo "=> [Hook] Wi-Fi/Bluetooth firmware installed."
