@@ -6,6 +6,7 @@ net-tools
 network-manager
 pciutils
 python3
+systemd-timesyncd
 thermald
 usbutils
 wireless-tools
