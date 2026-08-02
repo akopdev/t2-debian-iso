@@ -1,13 +1,15 @@
+dmg2img
 initramfs-tools
 intel-microcode
 libarchive-tools
+light
 locales
 net-tools
 network-manager
 pciutils
+playerctl
 python3
 systemd-timesyncd
 thermald
 usbutils
 wireless-tools
-dmg2img
