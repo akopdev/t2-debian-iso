@@ -11,5 +11,6 @@ playerctl
 python3
 systemd-timesyncd
 thermald
+unzip
 usbutils
 wireless-tools
