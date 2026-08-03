@@ -4,7 +4,7 @@ set -euo pipefail
 echo "=> [Hook] Installing dotfiles..."
 
 if ! id -u akop >/dev/null 2>&1; then
-    useradd -m -s /bin/zsh -u 1000 akop
+    useradd -m -s /bin/zsh -u 1000 -G video,input akop
 fi
 
 echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
