@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 echo "=> [Hook] Installing dotfiles..."
 
 if ! id -u akop >/dev/null 2>&1; then
@@ -9,6 +11,7 @@ echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
 chmod 0440 /etc/sudoers.d/temp-build-sudo
 
 su - akop -c '
+    set -euo pipefail
     echo "=> [Hook] Copy trusted taps/formulas from dotfiles..."
     mkdir -p "${HOME}/.homebrew"
     cp -r "${HOME}/.dotfiles/homebrew/." "${HOME}/.homebrew/"
