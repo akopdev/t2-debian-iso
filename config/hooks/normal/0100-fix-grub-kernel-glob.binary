@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euo pipefail
 echo "=> [Hook] Fixing grub.cfg kernel/initrd glob for t2 kernel naming..."
 sed -i \
     -e 's#/live/vmlinuz-\*[^ 	]*#/live/vmlinuz#g' \

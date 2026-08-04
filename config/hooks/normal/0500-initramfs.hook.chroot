@@ -1,4 +1,6 @@
 #!/bin/sh
+set -euo pipefail
+
 echo "=> [Hook] Forcing initramfs generation for installed kernel..."
 
 sed -i "s/COMPRESS=lz4/COMPRESS=gzip/g" "/etc/initramfs-tools/initramfs.conf"

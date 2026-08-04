@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 echo "=> [Hook] Installing JetBrains Mono Nerd Font..."
 
 FONT_DIR="/usr/share/fonts/truetype/jetbrains-mono-nerd"

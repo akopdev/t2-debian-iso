@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 echo "=> [Hook] Cleaning up caches to shrink ISO size..."
 
 apt-get autoremove --purge -y
