@@ -1,4 +1,0 @@
-#!/bin/sh
-echo "=> [Hook] Changing initramfs compression to gzip..."
-sed -i "s/COMPRESS=lz4/COMPRESS=gzip/g" "/etc/initramfs-tools/initramfs.conf"
-sed -i "s/COMPRESS=zstd/COMPRESS=gzip/g" "/etc/initramfs-tools/initramfs.conf"
