@@ -10,6 +10,52 @@ fi
 echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
 chmod 0440 /etc/sudoers.d/temp-build-sudo
 
+# install.sh (e.g. flatpak installs) needs a system D-Bus, which doesn't run in a chroot build
+_generated_machine_id=false
+if [ ! -s /etc/machine-id ]; then
+    dbus-uuidgen --ensure
+    _generated_machine_id=true
+fi
+
+mkdir -p /run/dbus
+dbus-daemon --system --fork
+
+# polkitd is needed too: flatpak's system-helper Deploy call is polkit-gated,
+# and akop is only authorized via the rule in 45-live-user.rules if polkitd is running
+polkitd_bin="$(command -v polkitd || echo /usr/lib/policykit-1/polkitd)"
+"${polkitd_bin}" --no-debug &
+_polkitd_pid=$!
+
+for _ in $(seq 1 20); do
+    if busctl --system status org.freedesktop.PolicyKit1 >/dev/null 2>&1; then
+        break
+    fi
+    sleep 0.25
+done
+
+# polkit always authorizes uid 0 unconditionally (special-cased ahead of any
+# .rules file), but akop is uid 1000 and there's no login session/logind in a
+# chroot for our custom rule to reliably match against - so route flatpak's
+# D-Bus calls through root instead of relying on that rule. Stub the real
+# binary in place (not a PATH shim) since akop's zsh dotfiles may set their
+# own PATH without /usr/local/bin.
+mv /usr/bin/flatpak /usr/bin/flatpak.real
+cat > /usr/bin/flatpak <<'EOF'
+#!/bin/bash
+exec sudo -n /usr/bin/flatpak.real "$@"
+EOF
+chmod +x /usr/bin/flatpak
+
+cleanup_dbus() {
+    kill "${_polkitd_pid}" 2>/dev/null || true
+    [ -f /run/dbus/pid ] && kill "$(cat /run/dbus/pid)" 2>/dev/null || true
+    if [ "${_generated_machine_id}" = true ]; then
+        : > /etc/machine-id
+    fi
+    mv -f /usr/bin/flatpak.real /usr/bin/flatpak 2>/dev/null || true
+}
+trap cleanup_dbus EXIT
+
 su - akop -c '
     set -euo pipefail
     echo "=> [Hook] Copy trusted taps/formulas from dotfiles..."
