@@ -6,4 +6,5 @@ rofi
 x11-xkb-utils
 xdg-desktop-portal
 xdg-desktop-portal-gtk
+xdg-utils
 xorg 
