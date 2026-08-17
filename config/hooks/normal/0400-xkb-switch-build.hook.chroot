@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "=> [Hook] Building xkb-switch from source..."
+# xkb-switch is not available in debian repo, so we build it here
+
+tmp_dir="$(mktemp -d)"
+git clone --depth 1 https://github.com/sergei-mironov/xkb-switch.git "${tmp_dir}"
+
+cmake -S "${tmp_dir}" -B "${tmp_dir}/build" -DCMAKE_BUILD_TYPE=Release
+cmake --build "${tmp_dir}/build" -j"$(nproc)"
+cmake --install "${tmp_dir}/build"
+ldconfig
+
+rm -rf "${tmp_dir}"

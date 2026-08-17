@@ -3,6 +3,14 @@ set -euo pipefail
 
 echo "=> [Hook] Installing dotfiles..."
 
+# Half of this code could be removed if folks from the Homebrew community could add support for user level
+# installation of flatpak packages . Instead, they hardcoded the `--system` flag into the extension itself 
+# (see https://github.com/Homebrew/brew/blob/main/Library/Homebrew/bundle/extensions/flatpak.rb), so it requires
+# root access for installation.
+#
+# To bypass this limitation in chroot, I have to spin up D-Bus service with polkitd. This is crazy, but it kind of works. 
+# Once I decide on brew/flatpak alternative, I can rethink this approach.
+
 if ! id -u akop >/dev/null 2>&1; then
     useradd -m -s /bin/zsh -u 1000 -G video,input akop
 fi
@@ -10,7 +18,6 @@ fi
 echo "akop ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/temp-build-sudo
 chmod 0440 /etc/sudoers.d/temp-build-sudo
 
-# install.sh (e.g. flatpak installs) needs a system D-Bus, which doesn't run in a chroot build
 _generated_machine_id=false
 if [ ! -s /etc/machine-id ]; then
     dbus-uuidgen --ensure
@@ -20,8 +27,6 @@ fi
 mkdir -p /run/dbus
 dbus-daemon --system --fork
 
-# polkitd is needed too: flatpak's system-helper Deploy call is polkit-gated,
-# and akop is only authorized via the rule in 45-live-user.rules if polkitd is running
 polkitd_bin="$(command -v polkitd || echo /usr/lib/policykit-1/polkitd)"
 "${polkitd_bin}" --no-debug &
 _polkitd_pid=$!
@@ -33,12 +38,7 @@ for _ in $(seq 1 20); do
     sleep 0.25
 done
 
-# polkit always authorizes uid 0 unconditionally (special-cased ahead of any
-# .rules file), but akop is uid 1000 and there's no login session/logind in a
-# chroot for our custom rule to reliably match against - so route flatpak's
-# D-Bus calls through root instead of relying on that rule. Stub the real
-# binary in place (not a PATH shim) since akop's zsh dotfiles may set their
-# own PATH without /usr/local/bin.
+# Shim flatpak to route through root to bypass uid 1000 chroot limitations
 mv /usr/bin/flatpak /usr/bin/flatpak.real
 cat > /usr/bin/flatpak <<'EOF'
 #!/bin/bash
@@ -58,6 +58,10 @@ trap cleanup_dbus EXIT
 
 su - akop -c '
     set -euo pipefail
+
+    echo "=> [Hook] Adding Flathub remote for flatpak..."
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
     echo "=> [Hook] Copy trusted taps/formulas from dotfiles..."
     mkdir -p "${HOME}/.homebrew"
     cp -r "${HOME}/.dotfiles/homebrew/." "${HOME}/.homebrew/"

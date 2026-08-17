@@ -1,6 +1,9 @@
 #!/bin/sh
 set -euo pipefail
-echo "=> [Hook] Fixing grub.cfg kernel/initrd glob for t2 kernel naming..."
+echo "=> [Hook] Fixing grub.cfg kernel glob path to match T2 kernel naming..."
+
+# Live-build uses default vmlinuz glob, while we need to load t2-kernel glob
+# in its own path, that will be available on later installation stage.
 sed -i \
     -e 's#/live/vmlinuz-\*[^ 	]*#/live/vmlinuz#g' \
     -e 's#/live/initrd\.img-\*[^ 	]*#/live/initrd.img#g' \

@@ -2,7 +2,7 @@
 .DEFAULT_GOAL: help
 
 # The path to the aarch64 UEFI firmware.
-# This path is specific to MacOS with, Qemu installed with  Homebrew.
+# This path is specific to macOS, with QEMU installed via Homebrew.
 # Change this variable if you're on a different system.
 QEMU_BIOS_PATH ?= /opt/homebrew/share/qemu/edk2-aarch64-code.fd
 

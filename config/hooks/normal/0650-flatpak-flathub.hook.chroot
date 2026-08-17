@@ -1,6 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-
-echo "=> [Hook] Adding Flathub remote for flatpak..."
-
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo

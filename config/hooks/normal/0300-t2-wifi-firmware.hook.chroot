@@ -1,31 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "=> [Hook] Installing Wi-Fi/Bluetooth firmware for T2 Macs..."
+echo "=> [Hook] Installing Wi-Fi/Bluetooth firmware ..."
 
 # Vendored from https://wiki.t2linux.org/tools/firmware.sh
+# 
+# Instead of juggling with ethernet connection after boot, I'm installing firmware during build stage.
+# This code was taken from original firmware.sh file and lightly adapted to perform all stages without
+# user input.
 #
-# Only the get_from_online codepath is used here (build the firmware from a
-# downloaded macOS Recovery image), plus rename_firmware(), which it depends
-# on. create_firmware_archive() was dropped: it was just rename_firmware()
-# plus a macOS-only nvram_txcap_quirk branch that's always dead code on
-# Linux. install_package() and aur_install() are also not copied: curl and
-# dmg2img are guaranteed by config/package-lists/system.list.chroot, and
-# libguestfs is installed/purged directly within this hook (see below), so
-# there's never a missing-dependency path that would need install_package().
-# reload_kernel_modules() is also not used: there is no real T2 hardware in
-# the build chroot to reload drivers against, the firmware just needs to land
-# under /lib/firmware/brcm for the booted kernel to pick up.
-#
-# Extraction itself diverges from upstream: the original mounts the
-# recovery image's HFS+ partition via the kernel and reads files off it
-# directly. That's not reliable in a Docker build chroot (see the
-# libguestfs comment below), so this uses `guestfish copy-out` instead,
-# which needs no loop device, no partition device nodes, and no kernel
-# filesystem support at all.
-#
-# This hook also runs as root already (chroot hooks always do), so every
-# `sudo` prefix from the original script has been dropped.
+# TODO: We still need python3 for actual firmware extraction. It contains a lot of irrelevant,
+# to my setup, code that can be easily stripped, reducing the surface area of possible install failures
+# and external dependencies.
 
 verbose="-v"
 
@@ -357,12 +343,13 @@ pkg.close()
 EOF
 }
 
-echo "=> [Hook] Downloading macOS Recovery Image (Sonoma)..."
+echo "=> [Hook] Downloading macOS Recovery Image ..."
 workdir=$(mktemp -d "${HOME}/tmp.XXXXXX")
 imgdir=$(mktemp -d)
 cd "${workdir}"
 
 curl -s -O https://raw.githubusercontent.com/kholia/OSX-KVM/master/fetch-macOS-v2.py
+# Sonoma is recommended option
 python3 fetch-macOS-v2.py -s sonoma
 
 echo "=> [Hook] Converting image from .dmg to .img..."
@@ -371,11 +358,10 @@ dmg2img -s BaseSystem.dmg fw.img
 cd - >/dev/null
 
 echo "=> [Hook] Installing libguestfs to read the recovery image..."
+# We need to install libguestfs to pull firmware from recovery image.
+# So far, it is a heavy library with tones of dependencies, that I want to purge once extraction is completed.
 apt-get update -qq
-
-_pkgs_before=$(dpkg-query -W -f='${Package}\n' | sort)
 apt-get install -y -qq libguestfs-tools libguestfs-hfsplus
-_pkgs_new=$(comm -13 <(echo "${_pkgs_before}") <(dpkg-query -W -f='${Package}\n' | sort))
 
 echo "=> [Hook] Extracting firmware from image..."
 partition=$(guestfish --ro -a "${workdir}/fw.img" run : list-filesystems | grep hfsplus | cut -d: -f1)
@@ -386,12 +372,9 @@ mkdir -p /lib/firmware/brcm
 rename_firmware "${imgdir}/firmware" "${workdir}/firmware-renamed.tar" ${verbose}
 tar ${verbose} -xC /lib/firmware/brcm -f "${workdir}/firmware-renamed.tar"
 
-echo "=> [Hook] Cleaning up..."
+echo "=> [Hook] Cleaning up after firmware installation..."
 rm -r ${verbose} "${workdir}"
 rm -r ${verbose} "${imgdir}"
-if [ -n "${_pkgs_new}" ]; then
-	apt-get purge -y -qq --allow-remove-essential ${_pkgs_new}
-fi
-apt-get autoremove -y -qq
 
-echo "=> [Hook] Wi-Fi/Bluetooth firmware installed."
+apt-get purge -y -qq libguestfs-tools libguestfs-hfsplus
+apt-get autoremove -y -qq

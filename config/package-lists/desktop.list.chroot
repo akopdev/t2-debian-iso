@@ -1,7 +1,9 @@
+feh
+fonts-jetbrains-mono
 i3-wm
+i3blocks
 i3lock
 i3status
-i3blocks
 lightdm 
 rofi
 x11-xkb-utils

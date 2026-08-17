@@ -1,4 +1,8 @@
-build-essential 
-curl 
-git 
+build-essential
+cmake
+curl
+git
+libx11-dev
+libxkbfile-dev
+pkg-config
 zsh
